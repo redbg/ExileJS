@@ -33,7 +33,7 @@ function Tick() {
             for (let i = 0; i < Game.EntityList.length; i++) {
                 const Entity = Game.EntityList[i];
                 if (Entity.objectName == "Metadata/MiscellaneousObjects/WorldItem") {
-                    console.log("Check" + " " + JSON.stringify(Entity));
+                    console.log("Click" + " " + JSON.stringify(Entity));
                     Game.Click(Entity.Id);
                     return;
                 }
