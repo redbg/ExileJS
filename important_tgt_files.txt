@@ -1,6 +1,6 @@
 {
   "1_1_1": {
-    "Metadata/Terrain/Beach/Transitions/beachtown_south_entrance_test.tdtx:0-y:1": "Lioneye's Watch"
+    "Metadata/Terrain/Beach/Transitions/beachtown_south_entrance_test.tdtx:2-y:2": "Lioneye's Watch"
   },
   "1_1_2": {
     "Metadata/Terrain/Beach/Transitions/beachtown_north_entrance_v2.tdtx:5-y:1": "Lioneye's Watch",

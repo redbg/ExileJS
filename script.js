@@ -29,21 +29,27 @@ function Tick() {
         // 絕望岩灘
         if (Game.WorldAreaId == "1_1_1") {
 
-            // 捡物品
+            // 自动复活
+            if (Game.FindEntity(Game.PlayerId).Components["Life"].Life == 0) {
+                console.log("复活");
+                Game.Resurrect();
+                return;
+            }
+
+            // 点击游戏对象
             for (let i = 0; i < Game.EntityList.length; i++) {
                 const Entity = Game.EntityList[i];
-                if (Entity.objectName == "Metadata/MiscellaneousObjects/WorldItem") {
-                    console.log("Click" + " " + JSON.stringify(Entity));
+
+                // Metadata/MiscellaneousObjects/WorldItem
+                // Metadata/QuestObjects/SouthBeachTownEntrance
+                if ((Entity.objectName == "Metadata/QuestObjects/SouthBeachTownEntrance" || Entity.objectName == "Metadata/MiscellaneousObjects/WorldItem")
+                    && Entity.size(Game.FindEntity(Game.PlayerId).Pos) < 60) {
                     Game.Click(Entity.Id);
                     return;
                 }
-            }
 
-            // 点击 Metadata/NPC/Act1/WoundedExile
-            for (let i = 0; i < Game.EntityList.length; i++) {
-                const Entity = Game.EntityList[i];
+                // Metadata/Monsters/Zombies/BiteZombieSpawner
                 if (Entity.objectName == "Metadata/Monsters/Zombies/BiteZombieSpawner") {
-                    console.log("ClickByObjectName" + " " + "Metadata/NPC/Act1/WoundedExile");
                     Game.ClickByObjectName("Metadata/NPC/Act1/WoundedExile");
                     return;
                 }
@@ -52,21 +58,42 @@ function Tick() {
             // 攻击
             for (let i = 0; i < Game.EntityList.length; i++) {
                 const Entity = Game.EntityList[i];
-                if (Entity.objectName == "Metadata/Monsters/Zombies/ZombieBite@1" && Entity.Components["Life"].Life > 0) {
-                    console.log("Attack" + " " + JSON.stringify(Entity));
-                    Game.Attack(Entity.Id, 0x4000);
+
+                // Metadata/Monsters/Zombies/ZombieBite@1
+                // Metadata/Monsters/ZombieBoss/ZombieBossHillockNormal@1
+                if ((Entity.objectName == "Metadata/Monsters/Zombies/ZombieBite@1" || Entity.objectName == "Metadata/Monsters/ZombieBoss/ZombieBossHillockNormal@1") &&
+                    Entity.Components["Life"].Life > 0) {
+
+                    if (Entity.size(Game.FindEntity(Game.PlayerId).Pos) < 50) {
+                        console.log("Attack" + " " + JSON.stringify(Entity));
+                        Game.Attack(Entity.Id, 0x4000);
+                    }
+                    else {
+                        var pos = Entity.Pos;
+                        Game.MoveTo(pos.x, pos.y);
+                    }
+
                     return;
                 }
             }
 
-            // 自动戴宝石
-            for (let i = 0; i < Game.ItemList.length; i++) {
-                const Item = Game.ItemList[i];
-                // 火球
-                if (Item.objectName == "Metadata/Items/Gems/SkillGemFireball") {
-                    console.log("带上宝石");
+            // 自动跳过教程
+            for (let i = 0; i < Game.EntityList.length; i++) {
+                const Entity = Game.EntityList[i];
+                if (Entity.objectName == "Metadata/Terrain/Act1/Area1/Objects/Tutorial_Blocker_1" && Entity.size(Game.FindEntity(Game.PlayerId).Pos) < 30) {
+                    Game.SendSkipAllTutorials();
+                    console.log("跳过教程");
                 }
             }
+
+            // // 自动戴宝石
+            // for (let i = 0; i < Game.ItemList.length; i++) {
+            //     const Item = Game.ItemList[i];
+            //     // 火球
+            //     if (Item.objectName == "Metadata/Items/Gems/SkillGemFireball") {
+            //         console.log("带上宝石");
+            //     }
+            // }
 
             var pos = Game.RadarInfo["Lioneye's Watch"];
             var player = Game.FindEntity(Game.PlayerId);
