@@ -130,7 +130,7 @@ function OnClientCharacterList() {
     }
     else {
         // 创建角色
-        Client.SendCreateCharacter(randomString(Math.floor(Math.random() * 8) + 8), "Archnemesis", CharacterClassType.Int);
+        Client.SendCreateCharacter(randomString(Math.floor(Math.random() * 8) + 8), "Standard", CharacterClassType.Int);
     }
 }
 
