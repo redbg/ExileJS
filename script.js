@@ -44,12 +44,14 @@ function Tick() {
                 // Metadata/QuestObjects/SouthBeachTownEntrance
                 if ((Entity.objectName == "Metadata/QuestObjects/SouthBeachTownEntrance" || Entity.objectName == "Metadata/MiscellaneousObjects/WorldItem")
                     && Entity.size(Game.FindEntity(Game.PlayerId).Pos) < 60) {
+                    console.log("Click" + " " + JSON.stringify(Entity));
                     Game.Click(Entity.Id);
                     return;
                 }
 
                 // Metadata/Monsters/Zombies/BiteZombieSpawner
                 if (Entity.objectName == "Metadata/Monsters/Zombies/BiteZombieSpawner") {
+                    console.log("ClickByObjectName" + " " + "Metadata/NPC/Act1/WoundedExile");
                     Game.ClickByObjectName("Metadata/NPC/Act1/WoundedExile");
                     return;
                 }
@@ -74,15 +76,6 @@ function Tick() {
                     }
 
                     return;
-                }
-            }
-
-            // 自动跳过教程
-            for (let i = 0; i < Game.EntityList.length; i++) {
-                const Entity = Game.EntityList[i];
-                if (Entity.objectName == "Metadata/Terrain/Act1/Area1/Objects/Tutorial_Blocker_1" && Entity.size(Game.FindEntity(Game.PlayerId).Pos) < 30) {
-                    Game.SendSkipAllTutorials();
-                    console.log("跳过教程");
                 }
             }
 
