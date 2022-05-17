@@ -1,4 +1,5 @@
 
+// Socket 状态
 const SocketState = {
     Unconnected: 0,
     HostLookup: 1,
@@ -9,6 +10,7 @@ const SocketState = {
     Closing: 6,
 }
 
+// 职业
 const CharacterClassType = {
     StrDexInt: 0,
     Str: 1,
@@ -17,6 +19,10 @@ const CharacterClassType = {
     StrDex: 4,
     StrInt: 5,
     DexInt: 6,
+}
+
+// 仓库类型
+const Inventories = {
 }
 
 function Tick() {
@@ -43,7 +49,7 @@ function Tick() {
                 // Metadata/MiscellaneousObjects/WorldItem
                 // Metadata/QuestObjects/SouthBeachTownEntrance
                 if ((Entity.objectName == "Metadata/QuestObjects/SouthBeachTownEntrance" || Entity.objectName == "Metadata/MiscellaneousObjects/WorldItem")
-                    && Entity.size(Game.FindEntity(Game.PlayerId).Pos) < 60) {
+                    && Entity.size(Game.FindEntity(Game.PlayerId).Pos) < 100) {
                     console.log("Click" + " " + JSON.stringify(Entity));
                     Game.Click(Entity.Id);
                     return;
@@ -79,14 +85,17 @@ function Tick() {
                 }
             }
 
-            // // 自动戴宝石
-            // for (let i = 0; i < Game.ItemList.length; i++) {
-            //     const Item = Game.ItemList[i];
-            //     // 火球
-            //     if (Item.objectName == "Metadata/Items/Gems/SkillGemFireball") {
-            //         console.log("带上宝石");
-            //     }
-            // }
+            // 自动戴宝石
+            for (let i = 0; i < Game.ItemList.length; i++) {
+                const Item = Game.ItemList[i];
+                // 火球
+                if (Item.InventoryName == "MainInventory1" && Item.objectName == "Metadata/Items/Gems/SkillGemFireball") {
+                    // console.log(JSON.stringify(Game.ItemList));
+                    console.log("带上宝石");
+                    Game.SendUpItem(1, 3);
+                    return;
+                }
+            }
 
             var pos = Game.RadarInfo["Lioneye's Watch"];
             var player = Game.FindEntity(Game.PlayerId);
