@@ -48,7 +48,9 @@ function Tick() {
 
                 // Metadata/MiscellaneousObjects/WorldItem
                 // Metadata/QuestObjects/SouthBeachTownEntrance
-                if ((Entity.objectName == "Metadata/QuestObjects/SouthBeachTownEntrance" || Entity.objectName == "Metadata/MiscellaneousObjects/WorldItem")
+                if ((Entity.objectName == "Metadata/QuestObjects/SouthBeachTownEntrance" ||
+                    Entity.objectName == "Metadata/MiscellaneousObjects/WorldItem" ||
+                    Entity.objectName == "Metadata/Chests/TutorialSupportGemChest")
                     && Entity.size(Game.FindEntity(Game.PlayerId).Pos) < 100) {
                     console.log("Click" + " " + JSON.stringify(Entity));
                     Game.Click(Entity.Id);
@@ -88,12 +90,34 @@ function Tick() {
             // 自动戴宝石
             for (let i = 0; i < Game.ItemList.length; i++) {
                 const Item = Game.ItemList[i];
-                // 火球
-                if (Item.InventoryName == "MainInventory1" && Item.objectName == "Metadata/Items/Gems/SkillGemFireball") {
-                    // console.log(JSON.stringify(Game.ItemList));
-                    console.log("带上宝石");
-                    Game.SendUpItem(1, 3);
-                    return;
+
+                if (Item.InventoryName == "Weapon1") {
+
+                    for (let j = 0; j < Item.Components["Sockets"].length; j++) {
+                        const Socket = Item.Components["Sockets"][j];
+
+                        // 判断孔上有没有宝石
+                        if (Socket.isItem == false) {
+
+                            for (let k = 0; k < Game.ItemList.length; k++) {
+                                const Gem = Game.ItemList[k];
+
+                                console.log(JSON.stringify(Socket));
+
+                                if (Gem.BaseItemType.InheritsFrom == "Metadata/Items/Gems/ActiveSkillGem" ||
+                                    Gem.BaseItemType.InheritsFrom == "Metadata/Items/Gems/SupportSkillGem") {
+
+                                    if (Gem.InventoryName == "MainInventory1") {
+                                        console.log("点击宝石");
+                                        Game.SendUpItem(1, Gem.Id);
+                                    } else if (Gem.InventoryName == "Cursor1") {
+                                        console.log("带上宝石");
+                                        Game.SendUseGem(3, Item.Id, j);
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
