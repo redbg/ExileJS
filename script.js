@@ -27,10 +27,22 @@ const Inventories = {
 
 function Tick() {
     if (Client.SocketState == SocketState.Unconnected && Game.SocketState == SocketState.Unconnected) {
-        Client.connectToHost("sjc01.login.pathofexile.com", 20481);
+        Client.connectToHost("dal01.login.pathofexile.com", 20481);
     }
 
     if (Game.SocketState == SocketState.Connected && Game.PlayerId != 0) {
+
+        // 獅眼守望
+        if (Game.WorldAreaId == "1_1_town") {
+            // 喊话
+            if (Game.ChatChannel != 0) {
+                console.log("Game.ChatChannel:" + Game.ChatChannel);
+                // Game.SendChat("#" + randomString(180));
+                // Game.SendChat("#" + "4PO#E .COM");
+                Game.Resurrect();
+                return;
+            }
+        }
 
         // 絕望岩灘
         if (Game.WorldAreaId == "1_1_1") {
@@ -51,7 +63,15 @@ function Tick() {
                 if ((Entity.objectName == "Metadata/QuestObjects/SouthBeachTownEntrance" ||
                     Entity.objectName == "Metadata/MiscellaneousObjects/WorldItem" ||
                     Entity.objectName == "Metadata/Chests/TutorialSupportGemChest")
-                    && Entity.size(Game.FindEntity(Game.PlayerId).Pos) < 100) {
+                    && Entity.size(Game.FindEntity(Game.PlayerId).Pos) < 70) {
+
+                    // 跳过已经打开的箱子
+                    if (typeof (Entity.Components["Chest"]) != "undefined" && Entity.Components["Chest"].v1 == 1) {
+                        // console.log("continue");
+                        continue;
+                    }
+
+                    // 点击
                     console.log("Click" + " " + JSON.stringify(Entity));
                     Game.Click(Entity.Id);
                     return;
@@ -62,6 +82,15 @@ function Tick() {
                     console.log("ClickByObjectName" + " " + "Metadata/NPC/Act1/WoundedExile");
                     Game.ClickByObjectName("Metadata/NPC/Act1/WoundedExile");
                     return;
+                }
+
+                // 跳过教程
+                if (Entity.objectName == "Metadata/Terrain/Act1/Area1/Objects/Tutorial_Blocker_3" && Entity.size(Game.FindEntity(Game.PlayerId).Pos) < 20) {
+                    console.log("跳过教程");
+                    console.log(JSON.stringify(Entity));
+                    if (Entity.Components["TriggerableBlockage"].v1 == 1) {
+                        Game.SendSkipAllTutorials();
+                    }
                 }
             }
 
@@ -74,9 +103,10 @@ function Tick() {
                 if ((Entity.objectName == "Metadata/Monsters/Zombies/ZombieBite@1" || Entity.objectName == "Metadata/Monsters/ZombieBoss/ZombieBossHillockNormal@1") &&
                     Entity.Components["Life"].Life > 0) {
 
-                    if (Entity.size(Game.FindEntity(Game.PlayerId).Pos) < 50) {
-                        console.log("Attack" + " " + JSON.stringify(Entity));
-                        Game.Attack(Entity.Id, 0x4000);
+                    if (Entity.size(Game.FindEntity(Game.PlayerId).Pos) < 100) {
+                        var skill = SelectSkill();
+                        console.log("Attack" + " " + skill.DisplayedName + " " + Entity.objectName);
+                        Game.Attack(Entity.Id, skill.id);
                     }
                     else {
                         var pos = Entity.Pos;
@@ -101,8 +131,6 @@ function Tick() {
 
                             for (let k = 0; k < Game.ItemList.length; k++) {
                                 const Gem = Game.ItemList[k];
-
-                                console.log(JSON.stringify(Socket));
 
                                 if (Gem.BaseItemType.InheritsFrom == "Metadata/Items/Gems/ActiveSkillGem" ||
                                     Gem.BaseItemType.InheritsFrom == "Metadata/Items/Gems/SupportSkillGem") {
@@ -134,6 +162,16 @@ function Tick() {
     }
 }
 
+function SelectSkill() {
+    var Actor = Game.FindEntity(Game.PlayerId).Components["Actor"];
+
+    if (Actor.ActiveSkills.length == 1) {
+        return Actor.ActiveSkills[0];
+    } else if (Actor.ActiveSkills.length == 2) {
+        return Actor.ActiveSkills[1];
+    }
+}
+
 // 响应登录成功事件
 function OnClientLoginSuccess() {
     console.log("OnClientLoginSuccess" + " " + JSON.stringify(Client));
@@ -156,7 +194,7 @@ function OnClientCharacterList() {
     }
     else {
         // 创建角色
-        Client.SendCreateCharacter(randomString(Math.floor(Math.random() * 8) + 8), "Standard", CharacterClassType.Int);
+        Client.SendCreateCharacter(randomString(Math.floor(Math.random() * 8) + 8), "Sentinel", CharacterClassType.Int);
     }
 }
 
