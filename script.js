@@ -37,8 +37,8 @@ function Tick() {
             // 喊话
             if (Game.ChatChannel != 0) {
                 console.log("Game.ChatChannel:" + Game.ChatChannel);
-                // Game.SendChat("#" + randomString(180));
-                // Game.SendChat("#" + "4PO#E .COM");
+                // Game.SendChat("# hello");
+                // Game.SendChat("#" + "q:q:::::::::272016983");
                 Game.Resurrect();
                 return;
             }
