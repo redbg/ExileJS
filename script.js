@@ -36,8 +36,21 @@ function Tick() {
             // 喊话
             if (Game.ChatChannel != 0) {
                 console.log("Game.ChatChannel:" + Game.ChatChannel);
-                // Game.SendChat("# hello");
-                // Game.SendChat("#" + "q:q:::::::::272016983");
+
+                Game.SendChat("# hello");
+
+                // switch (Math.floor(Math.random() * 3)) {
+                //     case 0:
+                //         Game.SendChat("# 1. p.2.p");
+                //         break;
+                //     case 1:
+                //         Game.SendChat("# 2. ah");
+                //         break;
+                //     case 2:
+                //         Game.SendChat("# 3. com");
+                //         break;
+                // }
+
                 Game.Resurrect();
                 return;
             }
@@ -46,80 +59,74 @@ function Tick() {
         // 絕望岩灘
         if (Game.WorldAreaId == "1_1_1") {
 
+            var Player = Game.FindEntity(Game.PlayerId);
+
             // 自动复活
-            if (Game.FindEntity(Game.PlayerId).Components["Life"].Life == 0) {
+            if (Player.Components["Life"].Life == 0) {
                 console.log("复活");
                 Game.Resurrect();
                 return;
             }
 
-            // 点击游戏对象
+            // 遍历对象
             for (let i = 0; i < Game.EntityList.length; i++) {
                 const Entity = Game.EntityList[i];
 
-                // Metadata/MiscellaneousObjects/WorldItem
-                // Metadata/QuestObjects/SouthBeachTownEntrance
-                if ((Entity.objectName == "Metadata/QuestObjects/SouthBeachTownEntrance" ||
-                    Entity.objectName == "Metadata/MiscellaneousObjects/WorldItem" ||
-                    Entity.objectName == "Metadata/Chests/TutorialSupportGemChest")
-                    && Entity.size(Game.FindEntity(Game.PlayerId).Pos) < 70) {
+                // 自动捡物品
+                if (Entity.objectName == "Metadata/MiscellaneousObjects/WorldItem" && Entity.size(Player.Pos) < 100) {
+                    Game.Click(Entity.Id);
+                    return;
+                }
 
-                    // 跳过已经打开的箱子
-                    if (typeof (Entity.Components["Chest"]) != "undefined" && Entity.Components["Chest"].v1 == 1) {
-                        // console.log("continue");
-                        continue;
+                // 自动打开宝石箱子
+                if (Entity.objectName == "Metadata/Chests/TutorialSupportGemChest" && Entity.size(Player.Pos) < 100) {
+                    // 点击没打开过的箱子
+                    if (Entity.Components["Chest"].v1 == 0) {
+                        Game.Click(Entity.Id);
+                        return;
                     }
+                }
 
-                    // 点击
-                    console.log("Click" + " " + JSON.stringify(Entity));
+                // 点击大门
+                if ((Entity.objectName == "Metadata/QuestObjects/SouthBeachTownEntrance") && Entity.size(Player.Pos) < 70) {
                     Game.Click(Entity.Id);
                     return;
                 }
 
                 // Metadata/Monsters/Zombies/BiteZombieSpawner
                 if (Entity.objectName == "Metadata/Monsters/Zombies/BiteZombieSpawner") {
-                    console.log("ClickByObjectName" + " " + "Metadata/NPC/Act1/WoundedExile");
                     Game.ClickByObjectName("Metadata/NPC/Act1/WoundedExile");
                     return;
                 }
 
-                // 跳过教程
-                if (Entity.objectName == "Metadata/Terrain/Act1/Area1/Objects/Tutorial_Blocker_3" && Entity.size(Game.FindEntity(Game.PlayerId).Pos) < 20) {
-                    console.log("跳过教程");
-                    console.log(JSON.stringify(Entity));
-                    if (Entity.Components["TriggerableBlockage"].v1 == 1) {
-                        Game.SendSkipAllTutorials();
-                    }
-                }
-            }
-
-            // 攻击
-            for (let i = 0; i < Game.EntityList.length; i++) {
-                const Entity = Game.EntityList[i];
-
-                // Metadata/Monsters/Zombies/ZombieBite@1
-                // Metadata/Monsters/ZombieBoss/ZombieBossHillockNormal@1
-                if ((Entity.objectName == "Metadata/Monsters/Zombies/ZombieBite@1" || Entity.objectName == "Metadata/Monsters/ZombieBoss/ZombieBossHillockNormal@1") &&
+                // 攻击
+                if ((Entity.objectName == "Metadata/Monsters/Zombies/ZombieBite@1" ||
+                    Entity.objectName == "Metadata/Monsters/ZombieBoss/ZombieBossHillockNormal@1") &&
                     Entity.Components["Life"].Life > 0) {
 
-                    if (Entity.size(Game.FindEntity(Game.PlayerId).Pos) < 100) {
+                    if (Entity.size(Player.Pos) < 100) {
                         var skill = SelectSkill();
                         console.log("Attack" + " " + skill.DisplayedName + " " + Entity.objectName);
                         Game.Attack(Entity.Id, skill.id);
                     }
                     else {
-                        var pos = Entity.Pos;
-                        Game.MoveTo(pos.x, pos.y);
+                        Game.MoveTo(Entity.Pos.x, Entity.Pos.y);
                     }
 
                     return;
                 }
+
+                // 跳过教程
+                if (Entity.objectName == "Metadata/Terrain/Act1/Area1/Objects/Tutorial_Blocker_3" && Entity.size(Player.Pos) < 50) {
+                    Game.SendSkipAllTutorials();
+                }
             }
 
-            // 自动戴宝石
+            // 遍历物品
             for (let i = 0; i < Game.ItemList.length; i++) {
                 const Item = Game.ItemList[i];
 
+                // 自动戴宝石
                 if (Item.InventoryName == "Weapon1") {
 
                     for (let j = 0; j < Item.Components["Sockets"].length; j++) {
@@ -131,15 +138,27 @@ function Tick() {
                             for (let k = 0; k < Game.ItemList.length; k++) {
                                 const Gem = Game.ItemList[k];
 
-                                if (Gem.BaseItemType.InheritsFrom == "Metadata/Items/Gems/ActiveSkillGem" ||
-                                    Gem.BaseItemType.InheritsFrom == "Metadata/Items/Gems/SupportSkillGem") {
-
-                                    if (Gem.InventoryName == "MainInventory1") {
-                                        console.log("点击宝石");
-                                        Game.SendUpItem(1, Gem.Id);
-                                    } else if (Gem.InventoryName == "Cursor1") {
-                                        console.log("带上宝石");
-                                        Game.SendUseGem(3, Item.Id, j);
+                                if (j == 0) {
+                                    // 主动技能
+                                    if (Gem.BaseItemType.InheritsFrom == "Metadata/Items/Gems/ActiveSkillGem") {
+                                        if (Gem.InventoryName == "MainInventory1") {
+                                            console.log("从仓库拿起宝石");
+                                            Game.SendUpItem(1, Gem.Id);
+                                        } else if (Gem.InventoryName == "Cursor1") {
+                                            console.log("带上宝石");
+                                            Game.SendUseGem(3, Item.Id, j);
+                                        }
+                                    }
+                                } else if (j == 1) {
+                                    // 辅助技能
+                                    if (Gem.BaseItemType.InheritsFrom == "Metadata/Items/Gems/SupportSkillGem") {
+                                        if (Gem.InventoryName == "MainInventory1") {
+                                            console.log("从仓库拿起宝石");
+                                            Game.SendUpItem(1, Gem.Id);
+                                        } else if (Gem.InventoryName == "Cursor1") {
+                                            console.log("带上宝石");
+                                            Game.SendUseGem(3, Item.Id, j);
+                                        }
                                     }
                                 }
                             }
@@ -149,9 +168,7 @@ function Tick() {
             }
 
             var pos = Game.RadarInfo["Lioneye's Watch"];
-            var player = Game.FindEntity(Game.PlayerId);
-            var size = player.size(Qt.point(pos.x, pos.y));
-            // console.log(size);
+            var size = Player.size(Qt.point(pos.x, pos.y));
 
             if (size > 100) {
                 Game.MoveTo(pos.x, pos.y);
@@ -193,12 +210,12 @@ function OnClientCharacterList() {
     }
     else {
         // 创建角色
-        Client.SendCreateCharacter(randomString(Math.floor(Math.random() * 8) + 8), "Sentinel", CharacterClassType.Int);
+        Client.SendCreateCharacter(randomString(8), "Sentinel", CharacterClassType.Int);
     }
 }
 
 // 生成随机字符串
-function randomString(len = 10) {
+function randomString(len = 8) {
     var result = '';
     var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
